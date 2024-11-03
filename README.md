@@ -18,6 +18,7 @@ This project is designed to provide a simple RESTful API for managing gas statio
 - Create, Read, Update, and Delete (CRUD) operations for gas stations
 - Search for gas stations by location, fuel type, and pricing
 - Data validation and error handling
+- Google Maps API implementation
 
 ## Technologies Used
 
@@ -25,6 +26,7 @@ This project is designed to provide a simple RESTful API for managing gas statio
 - **Framework:** Slim Framework
 - **Database:** MySQL
 - **Tools:** Postman for API testing, Git for version control
+- **Google Maps API key:** Refer to a tutorial for that.
 
 ## Getting Started
 
@@ -52,6 +54,10 @@ To get a local copy of this project up and running, follow these steps:
 5. **Run the API on a PHP Development Server**
    ```bash
    php -S 127.0.0.1:8888 -t public
+
+6. **Use your own API key**
+   ```bash
+   In the /site/site, open maps_prathria, maps_pelatis and maps_idioktitis files and paste your API key in the (yourkey) section.
 
 ## Usage
 
