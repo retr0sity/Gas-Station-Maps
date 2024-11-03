@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Fuel Order</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+	<style>
+		body {
+			background-color: #f2f2f2;
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+			line-height: 1.5;
+			margin: 0;
+			padding: 0;
+		}
+		h1 {
+			color: #007bff;
+			font-size: 36px;
+			font-weight: bold;
+			margin: 50px 0;
+			text-align: center;
+		}
+		form {
+			background-color: #fff;
+			border-radius: 5px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			margin: 0 auto;
+			max-width: 500px;
+			padding: 30px;
+		}
+		label {
+			color: #333;
+			display: block;
+			font-size: 18px;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+		select,
+		input[type="text"],
+		input[type="number"] {
+			background-color: #f2f2f2;
+			border: none;
+			border-radius: 5px;
+			box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+			color: #333;
+			font-size: 16px;
+			margin-bottom: 20px;
+			padding: 10px;
+			width: 100%;
+		}
+		select:focus,
+		input[type="text"]:focus,
+		input[type="number"]:focus {
+			box-shadow: inset 0(0, 0, 0, 0.2);
+			outline: none;
+		}
+		button[type="submit"] {
+			background-color: #007bff;
+			border: none;
+			border-radius: 5px;
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+			color: #fff;
+			cursor: pointer;
+			font-size: 18px;
+			font-weight: bold;
+			padding: 10px 20px;
+			transition: background-color 0.2s ease-in-out;
+			width: 100%;
+		}
+		button[type="submit"]:hover {
+			background-color: #0069d9;
+		}
+		.error-message {
+			color: #dc3545;
+			font-size: 14px;
+			margin-top: 10px;
+			text-align: center;
+		}
+		.success-message {
+			color: #28a745;
+			font-size: 14px;
+			-align: center;
+		}
+		.fa-check-circle {
+			color: #28a745;
+			font-size: 24px;
+			margin-right: 10px;
+			vertical-align: middle;
+		}
+		.fa-exclamation-circle {
+			color: #dc3545;
+			font-size: 24px;
+			margin-right: 10px;
+			vertical-align: middle;
+		}
+		.back-button {
+      	position: absolute;
+      	top: 20px;
+      	left: 20px;
+      	background-color: #007bff;
+      	color: #ffffff;
+      	border: none;
+      	padding: 8px 16px;
+      	border-radius: 5px;
+      	cursor: pointer;
+      	transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #007bff;
+    }
+	</style>
+</head>
+<body>
+	<button class="back-button" onclick="window.history.back()">Επιστροφή στην αρχική</button>
+	<h1>Πρατήρια Maps</h1>
+	<form id="order-form">
+		<label for="gasStationID">Πρατήριο</label>
+		<select id="gasStationID" required>
+			<option value="">Επιλέξτε πρατήριο</option>
+		</select>
+
+		<label for="productID">Προϊόν</label>
+		<select id="productID" required>
+			<option value="">Επιλέξτε καύσιμο</option>
+		</select>
+		<label for="quantity">Ποσότητα</label>
+		<input type="number" id="quantity" placeholder="Enter the quantity" min="1" max="100" required>
+
+		<button type="submit">Παραγγελία</button>
+
+		<div id="error-message" class="error-message"></div>
+		<div id="success-message" class="success-message"></div>
+	</form>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			// Get the list of gas stations
+			$.ajax({
+				url: "http://localhost:8888/gasstations",
+				type: "GET",
+				dataType: "json",
+				success: function(result){
+						$.each(result, function(i, gasStation) {
+							$("#gasStationID").append('<option value="' + gasStation.gasStationID + '">' + gasStation.gasStationOwner + '</option>');
+					});
+				},
+				error: function(xhr, resp, text) {
+					console.log(xhr, resp, text);
+				}
+		});
+			});
+
+			// Update the list of products when a gas station is selected
+			$("#gasStationID").change(function() {
+				var gasStationID = $(this).val();
+				$.ajax({
+					url: "http://localhost:8888/gasstations/" + gasStationID + "/prices",
+					type: "GET",
+					dataType: "json",
+					success: function(result) {
+						$("#productID").empty();
+						$.each(result, function(i, price) {
+							$("#productID").append('<option value="' + price.productID + '">' + price.fuelName + '</option>');
+						});
+					},
+					error: function(xhr, resp, text) {
+						console.log(xhr, resp, text);
+					}
+				});
+			});
+		
+			// Get the username from the URL
+			var urlParams = new URLSearchParams(window.location.search);
+			var username = urlParams.get('username');
+
+			// Submit the order form
+			$("#order-form").submit(function(event) {
+				event.preventDefault(); // Prevent the form from submitting via HTTP
+
+				// Get the form data and convert it to a JSON object
+				var data = {
+					productID: $("#productID").val(),
+					username: username,
+					quantity: $("#quantity").val()
+				};
+
+				// Send an AJAX request to the REST API endpoint
+				$.ajax({
+					url: "http://localhost:8888/orders",
+					method: "POST",
+					data: JSON.stringify(data),
+					dataType: "json",
+					contentType: "application/json",
+					success: function(response) {
+						// If the order was created successfully, display a success message
+						alert('Η παραγγελία σας πραγματοποιήθηκε!');
+						window.history.back();
+					},
+					error: function(xhr, status, error) {
+						// If there was an error, display the error message to the user
+						var error = JSON.parse(xhr.responseText).message;
+						$("#error-message").html('<i class="fas fa-exclamation-circle"></i> Error: ' + error);
+						$("#success-message").html("");
+					}
+			});
+			});
+		
+	</script>
+</body>
+</html>

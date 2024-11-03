@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Πρατήρια Maps - Λίστα</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 50px;
+      margin-bottom: 30px;
+      font-size: 36px;
+      color: #333333;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: 0 auto;
+      background-color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #dddddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      color: #333333;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .delete-button {
+      background-color: #f44336;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .delete-button:hover {
+      background-color: #d32f2f;
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 12px;
+      color: #333333;
+    }
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #555555;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript">
+    // Add a click event listener to the delete button
+    $(document).on("click", ".delete-button", function() {
+      var orderId = $(this).data("order-id");
+
+      // Call the PHP script to delete the order
+      $.ajax({
+        url: "http://localhost:8888/orders/" + orderId,
+        type: "DELETE",
+        dataType: "json",
+        success: function(result) {
+          // Reload the orders table
+          loadOrdersTable();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          // Handle the error here
+          console.log("Error deleting order: " + textStatus + ", " + errorThrown);
+        }
+      });
+    });
+
+    // Function to load the orders table
+    function loadOrdersTable() {
+      // Get the username from the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const username = urlParams.get('username');
+
+      // Call the PHP script to fetch the gasStationID
+      $.ajax({
+        url: "http://localhost:8888/gasstation/" + username,
+        type: "GET",
+        dataType: "json",
+        success: function(result) {
+          var gasStationID = result.gasStationID; // Update gasStationID value with retrieved value
+
+          // Call the PHP script to fetch the orders
+          $.ajax({
+            url: "http://localhost:8888/orders/" + gasStationID,
+            type: "GET",
+            dataType: "json",
+            success: function(result) {
+              // Clear the table body
+              $("#orders-table tbody").empty();
+
+              if (result.length === 0) {
+                // Display a message if the order list is empty
+                $("#orders-table tbody").append("<tr><td colspan='6' class='empty-message'>Order list is empty</td></tr>");
+              } else {
+                // Loop through the orders and append them to the table
+                $.each(result, function(i, order) {
+                  var deleteButton = "<button class='delete-button' data-order-id='" + order.orderID + "'>Διαγραφή</button>";
+                  $("#orders-table tbody").append("<tr><td>" + order.orderID + "</td><td>" + order.quantity + "</td><td>" + order.fuelName + "</td><td>" + order.fuelPrice + "</td><td>" + order.email + "</td><td>" + deleteButton + "</td></tr>");
+                });
+              }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+              // Handle the error here
+              console.log("Error retrieving orders: " + textStatus + ", " + errorThrown);
+            }
+          });
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          // Handle the error here
+          console.log("Error retrieving gasStationID: " + textStatus + ", " + errorThrown);
+        }
+      });
+    }
+
+    // Call the function to load the orders table on page load
+    loadOrdersTable();
+  </script>
+</head>
+<body>
+  <button class="back-button" onclick="window.history.back()">Επιστροφή στην αρχική</button>
+  <h1>Λίστα Παραγγελιών</h1>
+  <table id="orders-table">
+    <thead>
+      <tr>
+        <th>ID Παραγγελίας</th>
+        <th>Ποσότητα</th>
+        <th>Όνομα καυσίμου</th>
+        <th>Τιμή</th>
+        <th>Email</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</body>
+</html>

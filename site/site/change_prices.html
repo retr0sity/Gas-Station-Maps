@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Πρατήρια Maps</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 50px;
+  color: #007bff
+}
+
+h2 {
+  text-align: center;
+  margin-top: 50px;
+}
+
+table {
+  margin: 50px auto;
+  border-collapse: collapse;
+  width: 80%;
+  max-width: 800px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #ddd;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #007bff;
+    }
+
+#message {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: bold;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    // Get the username from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+
+    // Call the REST API function to get the gas station's products
+    $.ajax({
+      url: "http://localhost:8888/products/" + username,
+      type: "GET",
+      dataType: "json",
+      success: function(result) {
+        // Loop through the products and append them to the table
+        $.each(result, function(i, product) {
+          var row = "<tr><td>" + product.productID + "</td><td>" + product.fuelName + "</td><td id='fuel-price-" + product.productID + "'>" + product.fuelPrice + "</td><td><input type='text' class='price-input' data-product-id='" + product.productID + "'></td><td><button class='update-button' data-product-id='" + product.productID + "'>Αλλαγή</button></td></tr>";
+          $("#products-table tbody").append(row);
+        });
+
+        // Add a click event listener to the update button
+        $(".update-button").click(function() {
+          // Get the product ID and new fuel price from the input fields
+          var productID = $(this).data("product-id");
+          var fuelPrice = $(this).parent().prev().find(".price-input").val();
+
+          // Call the REST API function to update the fuel price
+          $.ajax({
+              url: "http://localhost:8888/pricedata/" + productID,
+              type: "PUT",
+              dataType: "json",
+              data: {
+                  fuelPrice: fuelPrice
+              },
+              success: function(result) {
+                  // Fetch the updated list from the server
+                  $.ajax({
+                      url: "http://localhost:8888/products/" + username,
+                      type: "GET",
+                      dataType: "json",
+                      success: function(result) {
+                          // Update the fuel price in the table
+                          $("#fuel-price-" + productID).text(fuelPrice);
+
+                          // Display a success message
+                          $("#message").text("Η τιμή ενημερώθηκε με επιτυχία!");
+                      },
+                      error: function(jqXHR, textStatus, errorThrown) {
+                          // Update the fuel price in the table
+                          $("#fuel-price-" + productID).text(fuelPrice);
+
+                          // Display a success message
+                          $("#message").text("Η τιμή ενημερώθηκε με επιτυχία!");
+                      },
+                  });
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                  // Update the fuel price in the table
+$("#fuel-price-" + productID).text(fuelPrice);
+
+// Display a success message
+$("#message").text("Η τιμή ενημερώθηκε με επιτυχία!");
+},
+          });
+        });
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        // Display an error message
+        $("#message").text("Error getting products: " + textStatus + ", " + errorThrown);
+      }
+    });
+
+    // Add a click event listener to the go back button
+    $("#go-back-button").click(function() {
+      // Redirect the user to the previous page
+      window.history.back();
+    });
+  });
+</script>
+</head>
+<body>
+<button class="back-button" id="go-back-button">Επιστροφή στην αρχική</button>
+<h1>Πρατήρια Maps</h1>
+  <br>
+  <br>
+  <br>
+<h2>Προϊόντα πρατηρίου</h2>
+
+<table id="products-table">
+  <thead>
+    <tr>
+      <th>ID Προϊόντος</th>
+      <th>Καύσιμο</th>
+      <th>Τιμή</th>
+      <th>Νέα τιμή</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<p id="message"></p>
+</body>
+</html>
