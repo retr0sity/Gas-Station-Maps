@@ -1,7 +1,7 @@
 # Gas Station API Project
 
 
-![screenshot](https://cdn.discordapp.com/attachments/470686558366728212/1303362992490020967/Messenger_creation_1671004203334525.jpg?ex=672b7ae0&is=672a2960&hm=17dbe24512fd5bfd7f90bbec4064cb4ea9063532d799ba62ce5bece58fcc2ffc&)
+![screenshot]([https://cdn.discordapp.com/attachments/470686558366728212/1303362992490020967/Messenger_creation_1671004203334525.jpg?ex=672b7ae0&is=672a2960&hm=17dbe24512fd5bfd7f90bbec4064cb4ea9063532d799ba62ce5bece58fcc2ffc&](https://cdn.discordapp.com/attachments/470686558366728212/1303362992490020967/Messenger_creation_1671004203334525.jpg?ex=673952a0&is=67380120&hm=e8b09613454eda5741316aaa66bdac2e35c81a659c5c9430d1fad6d0fc7ae5d5&))
 
 This project is designed to provide a simple RESTful API for managing gas station data, serving as a training exercise in API development and implementation.
 
